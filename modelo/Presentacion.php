@@ -8,7 +8,7 @@ class Presentacion{
 
     }
     function crear($nombre){
-        $sql="SELECT id_presentacion FROM presentacion where nombre=:nombre";
+        $sql="SELECT id_presentacion FROM presentacion WHERE nombre=:nombre AND Estado=1";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':nombre'=>$nombre));
         $this->objetos=$query->fetchall();
@@ -26,13 +26,13 @@ class Presentacion{
     function buscar(){
         if(!empty($_POST['consulta'])){
             $consulta=$_POST['consulta'];
-            $sql="SELECT * FROM presentacion where nombre LIKE :consulta";
+            $sql="SELECT * FROM presentacion WHERE nombre LIKE :consulta AND Estado=1";
             $query=$this->acceso->prepare($sql);
             $query->execute(array(':consulta'=>"%$consulta%"));
             $this->objetos=$query->fetchall();
             return $this->objetos;
         }else{
-            $sql="SELECT * FROM presentacion where nombre NOT LIKE '' ORDER BY id_presentacion LIMIT 25";
+            $sql="SELECT * FROM presentacion WHERE Estado=1 ORDER BY id_presentacion LIMIT 25";
             $query=$this->acceso->prepare($sql);
             $query->execute();
             $this->objetos=$query->fetchall();
@@ -41,7 +41,7 @@ class Presentacion{
     }
 
     function borrar($id){
-        $sql="DELETE FROM presentacion where id_presentacion=:id";
+        $sql="DELETE FROM presentacion WHERE id_presentacion=:id";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':id'=>$id));
         if(!empty($query->execute(array(':id'=>$id)))){
@@ -52,10 +52,18 @@ class Presentacion{
     }
 
     function editar($nombre,$id_editado){
-        $sql="UPDATE presentacion SET nombre=:nombre where id_presentacion=:id";
+        $sql="UPDATE presentacion SET nombre=:nombre WHERE id_presentacion=:id";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':id'=>$id_editado,':nombre'=>$nombre));
         echo 'edit';
+    }
+
+    function rellenar_presentaciones(){
+        $sql="SELECT * FROM presentacion WHERE Estado=1 ORDER BY nombre ASC";
+        $query=$this->acceso->prepare($sql);
+        $query->execute();
+        $this->objetos=$query->fetchall();
+        return $this->objetos;
     }
 }
 

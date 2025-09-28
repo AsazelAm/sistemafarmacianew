@@ -4,7 +4,7 @@
 //Es programacion Orientada a objetos
 class Conexion{ //Creamos una clase
     private $servidor="localhost"; //las variables es de tipo private
-    private $db="farmaciasistema"; //llamamos a la base de datos
+    private $db="bdfarmacia"; //llamamos a la base de datos
     private $puerto =3307; //el puerto de mi xam para el MYsql
     private $charset="utf8";//el tipo de dato q va ser español
     private $usuario="root";//usriario por defecto del xamp

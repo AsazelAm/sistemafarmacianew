@@ -8,7 +8,7 @@ class Laboratorio{
 
     }
     function crear($nombre,$avatar){
-        $sql="SELECT id_laboratorio FROM laboratorio where nombre=:nombre";
+        $sql="SELECT id_laboratorio FROM laboratorio WHERE nombre=:nombre AND Estado=1";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':nombre'=>$nombre));
         $this->objetos=$query->fetchall();
@@ -26,13 +26,13 @@ class Laboratorio{
     function buscar(){
         if(!empty($_POST['consulta'])){
             $consulta=$_POST['consulta'];
-            $sql="SELECT * FROM laboratorio where nombre LIKE :consulta";
+            $sql="SELECT * FROM laboratorio WHERE nombre LIKE :consulta AND Estado=1";
             $query=$this->acceso->prepare($sql);
             $query->execute(array(':consulta'=>"%$consulta%"));
             $this->objetos=$query->fetchall();
             return $this->objetos;
         }else{
-            $sql="SELECT * FROM laboratorio where nombre NOT LIKE '' ORDER BY id_laboratorio LIMIT 25";
+            $sql="SELECT * FROM laboratorio WHERE Estado=1 ORDER BY id_laboratorio LIMIT 25";
             $query=$this->acceso->prepare($sql);
             $query->execute();
             $this->objetos=$query->fetchall();
@@ -41,12 +41,12 @@ class Laboratorio{
     }
 
     function cambiar_logo($id,$nombre){
-        $sql="SELECT avatar FROM laboratorio where id_laboratorio=:id";
+        $sql="SELECT avatar FROM laboratorio WHERE id_laboratorio=:id";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':id'=>$id));
         $this->objetos=$query->fetchall();
         
-            $sql="UPDATE laboratorio SET avatar=:nombre where id_laboratorio=:id";
+            $sql="UPDATE laboratorio SET avatar=:nombre WHERE id_laboratorio=:id";
             $query=$this->acceso->prepare($sql);
             $query->execute(array(':id'=>$id,':nombre'=>$nombre));
         
@@ -54,7 +54,7 @@ class Laboratorio{
     }
 
     function borrar($id){
-        $sql="DELETE FROM laboratorio where id_laboratorio=:id";
+        $sql="DELETE FROM laboratorio WHERE id_laboratorio=:id";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':id'=>$id));
         if(!empty($query->execute(array(':id'=>$id)))){
@@ -65,14 +65,14 @@ class Laboratorio{
     }
 
     function editar($nombre,$id_editado){
-        $sql="UPDATE laboratorio SET nombre=:nombre where id_laboratorio=:id";
+        $sql="UPDATE laboratorio SET nombre=:nombre WHERE id_laboratorio=:id";
         $query=$this->acceso->prepare($sql);
         $query->execute(array(':id'=>$id_editado,':nombre'=>$nombre));
         echo 'edit';
     }
 
     function rellenar_laboratorios(){
-        $sql="SELECT * FROM laboratorio order by nombre asc";
+        $sql="SELECT * FROM laboratorio WHERE Estado=1 ORDER BY nombre ASC";
         $query=$this->acceso->prepare($sql);
         $query->execute();
         $this->objetos=$query->fetchall();
