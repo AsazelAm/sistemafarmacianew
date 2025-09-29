@@ -1,6 +1,6 @@
 <?php
 session_start();
-if($_SESSION['us_tipo']==2){//q me permita q solo sea pal acceso al tecnico
+if($_SESSION['us_tipo']==3||$_SESSION['us_tipo']==5 ){//q me permita q solo sea pal acceso al tecnico
 
 ?>
 <!DOCTYPE html>

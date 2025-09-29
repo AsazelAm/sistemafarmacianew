@@ -1,169 +1,238 @@
 <?php
-//incluimos la Conexion para poderla llamarlo 
+// Incluimos la Conexion para poderla llamar
 include_once 'Conexion.php';
-//Creamos una clase
+
+/**
+ * Clase Usuario
+ * Gestiona todas las operaciones relacionadas con los usuarios del sistema
+ */
 class Usuario{
-    var $objetos;
-    /*Lo q hace es instanciamos una variable de tipo usuario automaticamente estamos haciendo la conexion pdo */
-    public function __construct(){//declaramos nuestra funcion constructor
-        $db=new Conexion();//vamos a crear una nueva conexion pdo 
-        $this->acceso=$db->pdo;/*y le vamos asignar al this acceso q es una variable del propio modelo, al this->acceso le vamos a pasar el pdo*/
+    var $objetos; // Variable que almacenará los resultados de las consultas
+    private $acceso; // Variable para la conexión PDO
+    
+    /**
+     * Constructor de la clase
+     * Instancia automáticamente la conexión a la base de datos
+     */
+    public function __construct(){
+        $db = new Conexion(); // Creamos una nueva conexión PDO
+        $this->acceso = $db->pdo; // Asignamos el objeto PDO a la propiedad $acceso
     }
-      //creamos los metodos
-    function Loguearse($dni,$pass){
-        //hacemos nuestra consulta la pdo y sql - ACTUALIZADA para nueva estructura
-        $sql="SELECT usuario.*, tipo_us.nombre_tipo FROM usuario INNER JOIN tipo_us ON usuario.id_tipo_us=tipo_us.id_tipo_us WHERE usuario.ci=:dni AND usuario.constrasena=:pass AND usuario.Estado=1";
-        /*Declaramos un query donde vamos asignarle primero obtener el acceso pdo y le vamos a pasar un prepare($sql) */
-        $query=$this->acceso->prepare($sql);
-        //y levamos a pasar al query un execute(array()) y al exute le pasamos un array con nuestras variables dni,pass
-        $query->execute(array(':dni'=>$dni,':pass'=>$pass));
-        //le asiganmos al this objetos q se va retornar 
-        $this->objetos=$query->fetchall();
-        return $this->objetos;//y le retornamos el this objetos
-    }
+    
 
-
-    function obtener_datos($id){
-        /*Consulta actualizada para la nueva estructura de BD*/
-        $sql="SELECT usuario.*, tipo_us.nombre_tipo FROM usuario JOIN tipo_us ON usuario.id_tipo_us=tipo_us.id_tipo_us WHERE usuario.id_usuario=:id AND usuario.Estado=1";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id'=>$id));
-        $this->objetos=$query->fetchall();//fetchall es un metodo para buscar todas las coincidencias
+    function Loguearse($dni, $pass){
+        // Consulta SQL con INNER JOIN para obtener datos del usuario y su tipo
+        $sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.ci, u.telefono, u.email, 
+                       u.id_tipo_us, u.codigo_empleado, u.fecha_nacimiento, u.avatar,
+                       u.residencia, u.sexo, u.adicional,
+                       t.nombre_tipo 
+                FROM usuario u 
+                INNER JOIN tipo_us t ON u.id_tipo_us = t.id_tipo_us 
+                WHERE u.ci = :dni AND u.constrasena = :pass AND u.Estado = 1";
+        
+        // Preparamos la consulta para prevenir inyección SQL
+        $query = $this->acceso->prepare($sql);
+        
+        // Ejecutamos la consulta pasando los parámetros de forma segura
+        $query->execute(array(':dni' => $dni, ':pass' => $pass));
+        
+        // fetchAll() recupera todas las filas que coincidan con la consulta
+        $this->objetos = $query->fetchAll();
+        
         return $this->objetos;
     }
 
-    function editar($id_usuario,$telefono,$residencia,$correo,$sexo,$adicional){
-        // Actualizada para usar los nombres correctos de columnas
-        $sql="UPDATE usuario SET telefono=:telefono, email=:correo WHERE id_usuario=:id";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id'=>$id_usuario,':telefono'=>$telefono,':correo'=>$correo));
+  
+    function obtener_datos($id){
+        $sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.ci, u.telefono, u.email, 
+                       u.id_tipo_us, u.codigo_empleado, u.fecha_nacimiento, u.avatar,
+                       u.residencia, u.sexo, u.adicional,
+                       t.nombre_tipo 
+                FROM usuario u 
+                JOIN tipo_us t ON u.id_tipo_us = t.id_tipo_us 
+                WHERE u.id_usuario = :id AND u.Estado = 1";
+        
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id' => $id));
+        $this->objetos = $query->fetchAll();
+        
+        return $this->objetos;
     }
 
-    function cambiar_contra($id_usuario,$oldpass,$newpass){
-        // Corregida la columna de contraseña
-        $sql="SELECT * FROM usuario WHERE id_usuario=:id AND constrasena=:oldpass";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id'=>$id_usuario,':oldpass'=>$oldpass));
-        $this->objetos=$query->fetchall();
+  
+    function editar($id_usuario, $telefono, $residencia, $correo, $sexo, $adicional){
+        // Actualizamos todos los campos editables
+        $sql = "UPDATE usuario 
+                SET telefono = :telefono, 
+                    residencia = :residencia,
+                    email = :correo,
+                    sexo = :sexo,
+                    adicional = :adicional
+                WHERE id_usuario = :id";
+        
+        $query = $this->acceso->prepare($sql);
+        
+        $query->execute(array(
+            ':id' => $id_usuario,
+            ':telefono' => $telefono,
+            ':residencia' => $residencia,
+            ':correo' => $correo,
+            ':sexo' => $sexo,
+            ':adicional' => $adicional
+        ));
+        echo 'editado';
+    }
+
+
+    function cambiar_contra($id_usuario, $oldpass, $newpass){
+        // Primero verificamos que la contraseña actual sea correcta
+        $sql = "SELECT id_usuario FROM usuario 
+                WHERE id_usuario = :id AND constrasena = :oldpass";
+        
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id' => $id_usuario, ':oldpass' => $oldpass));
+        $this->objetos = $query->fetchAll();
+        
+        // Si la contraseña actual es correcta, actualizamos
         if(!empty($this->objetos)){
-            $sql="UPDATE usuario SET constrasena=:newpass WHERE id_usuario=:id";
-            $query=$this->acceso->prepare($sql);
-            $query->execute(array(':id'=>$id_usuario,':newpass'=>$newpass));
-            echo'update';
-        }else{
+            $sql = "UPDATE usuario SET constrasena = :newpass WHERE id_usuario = :id";
+            $query = $this->acceso->prepare($sql);
+            $query->execute(array(':id' => $id_usuario, ':newpass' => $newpass));
+            echo 'update';
+        } else {
             echo 'noupdate';
         }
     }
 
-    function cambiar_photo($id_usuario,$nombre){
-        // Esta función necesita ser adaptada ya que no existe campo avatar en la nueva estructura
-        // Por ahora la deshabilitamos o necesitarías agregar este campo a la tabla usuario
+   
+    function cambiar_photo($id_usuario, $nombre){
+        // Obtenemos el avatar anterior para eliminarlo
+        $sql = "SELECT avatar FROM usuario WHERE id_usuario = :id";
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id' => $id_usuario));
+        $this->objetos = $query->fetchAll();
         
-        // Si quieres mantener avatars, deberías agregar el campo a la tabla usuario:
-        // ALTER TABLE usuario ADD COLUMN avatar VARCHAR(255) DEFAULT 'default.jpg';
-        
-        $sql="SELECT codigo_empleado FROM usuario WHERE id_usuario=:id";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id'=>$id_usuario));
-        $this->objetos=$query->fetchall();
-        
-        // Comentado hasta que agregues el campo avatar
-        /*
-        $sql="UPDATE usuario SET avatar=:nombre WHERE id_usuario=:id";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id'=>$id_usuario,':nombre'=>$nombre));
-        */
+        // Actualizamos el avatar
+        $sql = "UPDATE usuario SET avatar = :nombre WHERE id_usuario = :id";
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id' => $id_usuario, ':nombre' => $nombre));
         
         return $this->objetos;
     }
 
     function buscar(){
+        // Si hay una consulta de búsqueda, filtramos por nombre, apellido o CI
         if(!empty($_POST['consulta'])){
-            $consulta=$_POST['consulta'];
-            $sql="SELECT usuario.*, tipo_us.nombre_tipo FROM usuario JOIN tipo_us ON usuario.id_tipo_us=tipo_us.id_tipo_us WHERE usuario.nombre LIKE :consulta AND usuario.Estado=1";
-            $query=$this->acceso->prepare($sql);
-            $query->execute(array(':consulta'=>"%$consulta%"));
-            $this->objetos=$query->fetchall();
-            return $this->objetos;
-        }else{
-            $sql="SELECT usuario.*, tipo_us.nombre_tipo FROM usuario JOIN tipo_us ON usuario.id_tipo_us=tipo_us.id_tipo_us WHERE usuario.Estado=1 ORDER BY usuario.id_usuario LIMIT 25";
-            $query=$this->acceso->prepare($sql);
+            $consulta = $_POST['consulta'];
+            $sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.ci, u.telefono, u.email, 
+                           u.id_tipo_us, u.codigo_empleado, u.fecha_nacimiento, u.avatar,
+                           u.residencia, u.sexo, u.adicional,
+                           t.nombre_tipo 
+                    FROM usuario u 
+                    JOIN tipo_us t ON u.id_tipo_us = t.id_tipo_us 
+                    WHERE (u.nombre LIKE :consulta OR u.apellido LIKE :consulta OR u.ci LIKE :consulta) 
+                    AND u.Estado = 1";
+            
+            $query = $this->acceso->prepare($sql);
+            $query->execute(array(':consulta' => "%$consulta%"));
+        } else {
+            // Sin búsqueda, mostramos todos los usuarios activos (limitado a 25)
+            $sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.ci, u.telefono, u.email, 
+                           u.id_tipo_us, u.codigo_empleado, u.fecha_nacimiento, u.avatar,
+                           u.residencia, u.sexo, u.adicional,
+                           t.nombre_tipo 
+                    FROM usuario u 
+                    JOIN tipo_us t ON u.id_tipo_us = t.id_tipo_us 
+                    WHERE u.Estado = 1 
+                    ORDER BY u.id_usuario DESC 
+                    LIMIT 25";
+            
+            $query = $this->acceso->prepare($sql);
             $query->execute();
-            $this->objetos=$query->fetchall();
-            return $this->objetos;
         }
+        
+        $this->objetos = $query->fetchAll();
+        return $this->objetos;
     }
 
-
-    function crear($nombre,$apellido,$edad,$dni,$pass,$tipo,$avatar){
-        // Verificar si el CI ya existe
-        $sql="SELECT id_usuario FROM usuario WHERE ci=:dni";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':dni'=>$dni));
-        $this->objetos=$query->fetchall();
+    function crear($nombre, $apellido, $fecha_nac, $dni, $pass, $tipo, $avatar){
+        // Verificamos si el CI ya existe
+        $sql = "SELECT id_usuario FROM usuario WHERE ci = :dni";
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':dni' => $dni));
+        $this->objetos = $query->fetchAll();
+        
         if(!empty($this->objetos)){
-            echo 'noadd';
-        }else{
-            // Necesitas especificar id_sucursal también (requerido por la FK)
-            // Asumiendo sucursal por defecto = 1, ajusta según tu lógica
-            $sql="INSERT INTO usuario(nombre,apellido,ci,constrasena,id_tipo_us,id_sucursal,Estado,fecha_creacion) 
-                  VALUES (:nombre,:apellido,:dni,:pass,:tipo,1,1,NOW())";
-            $query=$this->acceso->prepare($sql);
+            echo 'noadd'; // El CI ya está registrado
+        } else {
+            // Insertamos el nuevo usuario con todos los campos
+            $sql = "INSERT INTO usuario(nombre, apellido, ci, constrasena, id_tipo_us, 
+                    id_sucursal, Estado, fecha_creacion, fecha_nacimiento, avatar) 
+                    VALUES (:nombre, :apellido, :dni, :pass, :tipo, 1, 1, NOW(), :fecha_nac, :avatar)";
+            
+            $query = $this->acceso->prepare($sql);
             $query->execute(array(
-                ':nombre'=>$nombre,
-                ':apellido'=>$apellido,
-                ':dni'=>$dni,
-                ':pass'=>$pass,
-                ':tipo'=>$tipo
+                ':nombre' => $nombre,
+                ':apellido' => $apellido,
+                ':dni' => $dni,
+                ':pass' => $pass,
+                ':tipo' => $tipo,
+                ':fecha_nac' => $fecha_nac,
+                ':avatar' => $avatar
             ));
             echo "add";
         }
     }
-    
-    function ascender($pass,$id_ascendido,$id_usuario){
-        $sql="SELECT id_usuario FROM usuario WHERE id_usuario=:id_usuario AND constrasena=:pass";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id_usuario'=>$id_usuario,':pass'=>$pass));
-        $this->objetos=$query->fetchall();
+  
+    function ascender($pass, $id_ascendido, $id_usuario){
+        // Verificamos que quien realiza la acción tenga la contraseña correcta
+        $sql = "SELECT id_usuario FROM usuario WHERE id_usuario = :id_usuario AND constrasena = :pass";
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id_usuario' => $id_usuario, ':pass' => $pass));
+        $this->objetos = $query->fetchAll();
+        
         if(!empty($this->objetos)){
-            $tipo=1;
-            $sql="UPDATE usuario SET id_tipo_us=:tipo WHERE id_usuario=:id";
-            $query=$this->acceso->prepare($sql);
-            $query->execute(array(':id'=>$id_ascendido,':tipo'=>$tipo));
+            $tipo = 2; // Tipo AdministradorFarmacia
+            $sql = "UPDATE usuario SET id_tipo_us = :tipo WHERE id_usuario = :id";
+            $query = $this->acceso->prepare($sql);
+            $query->execute(array(':id' => $id_ascendido, ':tipo' => $tipo));
             echo 'ascendido';
-        }else{
+        } else {
             echo "noascendido";
         }
     }
 
-    function descender($pass,$id_descendido,$id_usuario){
-        $sql="SELECT id_usuario FROM usuario WHERE id_usuario=:id_usuario AND constrasena=:pass";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id_usuario'=>$id_usuario,':pass'=>$pass));
-        $this->objetos=$query->fetchall();
+    function descender($pass, $id_descendido, $id_usuario){
+        $sql = "SELECT id_usuario FROM usuario WHERE id_usuario = :id_usuario AND constrasena = :pass";
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id_usuario' => $id_usuario, ':pass' => $pass));
+        $this->objetos = $query->fetchAll();
+        
         if(!empty($this->objetos)){
-            $tipo=2;
-            $sql="UPDATE usuario SET id_tipo_us=:tipo WHERE id_usuario=:id";
-            $query=$this->acceso->prepare($sql);
-            $query->execute(array(':id'=>$id_descendido,':tipo'=>$tipo));
+            $tipo = 5; // Tipo Cajero (nivel más bajo)
+            $sql = "UPDATE usuario SET id_tipo_us = :tipo WHERE id_usuario = :id";
+            $query = $this->acceso->prepare($sql);
+            $query->execute(array(':id' => $id_descendido, ':tipo' => $tipo));
             echo 'descendido';
-        }else{
+        } else {
             echo "nodescendido";
         }
     }
 
-    function borrar($pass,$id_borrado,$id_usuario){
-        $sql="SELECT id_usuario FROM usuario WHERE id_usuario=:id_usuario AND constrasena=:pass";
-        $query=$this->acceso->prepare($sql);
-        $query->execute(array(':id_usuario'=>$id_usuario,':pass'=>$pass));
-        $this->objetos=$query->fetchall();
+
+    function borrar($pass, $id_borrado, $id_usuario){
+        $sql = "SELECT id_usuario FROM usuario WHERE id_usuario = :id_usuario AND constrasena = :pass";
+        $query = $this->acceso->prepare($sql);
+        $query->execute(array(':id_usuario' => $id_usuario, ':pass' => $pass));
+        $this->objetos = $query->fetchAll();
+        
         if(!empty($this->objetos)){
-            // Usar soft delete en lugar de borrado físico
-            $sql="UPDATE usuario SET Estado=0 WHERE id_usuario=:id";
-            $query=$this->acceso->prepare($sql);
-            $query->execute(array(':id'=>$id_borrado));
+            // Soft delete: cambiamos Estado a 0 en lugar de eliminar el registro
+            $sql = "UPDATE usuario SET Estado = 0 WHERE id_usuario = :id";
+            $query = $this->acceso->prepare($sql);
+            $query->execute(array(':id' => $id_borrado));
             echo 'borrado';
-        }else{
+        } else {
             echo "noborrado";
         }
     }

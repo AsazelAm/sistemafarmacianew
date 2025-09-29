@@ -1,6 +1,6 @@
 <?php
 session_start();
-if($_SESSION['us_tipo']==1 ||$_SESSION['us_tipo']==3){//comprovamos q el usuario se de tipo administrador para q nos permita entrar a la pagina
+if($_SESSION['us_tipo']==1 ||$_SESSION['us_tipo']==2 ||$_SESSION['us_tipo']==4){//comprovamos q el usuario se de tipo administrador para q nos permita entrar a la pagina
     include_once'layouts/header.php';
 ?>
   <title>Adm | Catalogo</title>

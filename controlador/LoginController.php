@@ -1,47 +1,103 @@
 <?php
-//incluimos al modelo Usuario
-include_once '../modelo/Usuario.php';
-session_start();
-$user=$_POST['user'];//Recuperamos los valores de los inputs con el nombre del name
-$pass=$_POST['pass'];
+/**
+ * CONTROLADOR: LoginController.php
+ * Gestiona el proceso de autenticación de usuarios
+ * Valida credenciales y crea sesiones según el tipo de usuario
+ */
 
-$usuario = new Usuario();//instanciamos el modelo Usuario
-if(!empty($_SESSION['us_tipo'])){//Verificamos si hay una sesion en curso
-    //redirigimos según el tipo de usuario
+// Incluimos el modelo Usuario para poder usar sus métodos
+include_once '../modelo/Usuario.php';
+
+// Iniciamos la sesión
+session_start();
+
+// Recuperamos los valores de los inputs del formulario de login
+$user = $_POST['user']; // CI del usuario
+$pass = $_POST['pass']; // Contraseña del usuario
+
+// Instanciamos el modelo Usuario
+$usuario = new Usuario();
+
+/**
+ * Verificamos si ya existe una sesión activa
+ * Si existe, redirigimos según el tipo de usuario
+ */
+if(!empty($_SESSION['us_tipo'])){
+    // Redirigimos según el tipo de usuario logueado
     switch($_SESSION['us_tipo']){
-        case 1:
+        case 1: // Root
             header('Location:../vista/adm_catalogo.php');
             break;
-        case 2:
+        case 2: // AdministradorFarmacia
+            header('Location:../vista/adm_catalogo.php');
+            break;
+        case 3: // Farmaceutico
             header('Location:../vista/tec_catalogo.php');
             break;
-        case 3:
+        case 4: // Supervisor
             header('Location:../vista/adm_catalogo.php');
             break;
+        case 5: // Cajero
+            header('Location:../vista/tec_catalogo.php');
+            break;
+        default:
+            // Si el tipo no es reconocido, cerramos sesión
+            session_destroy();
+            header('Location: ../index.php');
+            break;
     }
-}else{ 
-    $usuario->Loguearse($user,$pass);//llamamos al método loguearse
+} else {
+    /**
+     * No hay sesión activa, intentamos loguearnos
+     * Llamamos al método Loguearse del modelo Usuario
+     */
+    $usuario->Loguearse($user, $pass);
     
-    if(!empty($usuario->objetos)){//verificamos si encontró un usuario
-        foreach($usuario->objetos as $objeto){//recorremos el resultado
-            //creamos las variables de sesión - ACTUALIZADAS para nueva estructura
-            $_SESSION['usuario']=$objeto->id_usuario;
-            $_SESSION['us_tipo']=$objeto->id_tipo_us;
-            $_SESSION['nombre_us']=$objeto->nombre;
+    // Verificamos si se encontró un usuario con esas credenciales
+    if(!empty($usuario->objetos)){
+        // Recorremos el resultado (aunque sea un solo usuario)
+        foreach($usuario->objetos as $objeto){
+            /**
+             * Creamos las variables de sesión con los datos del usuario
+             * Estas variables estarán disponibles en todas las páginas
+             */
+            $_SESSION['usuario'] = $objeto->id_usuario; // ID del usuario
+            $_SESSION['us_tipo'] = $objeto->id_tipo_us; // Tipo de usuario
+            $_SESSION['nombre_us'] = $objeto->nombre; // Nombre del usuario
+            $_SESSION['apellido_us'] = $objeto->apellido; // Apellido del usuario (nuevo)
+            $_SESSION['avatar'] = $objeto->avatar; // Avatar del usuario (nuevo)
         }
-        //redirigimos según el tipo de usuario
+        
+        /**
+         * Redirigimos según el tipo de usuario
+         * Cada tipo tiene acceso a diferentes vistas del sistema
+         */
         switch($_SESSION['us_tipo']){
-            case 1:
+            case 1: // Root - Acceso completo al sistema
                 header('Location:../vista/adm_catalogo.php');
                 break;
-            case 2:
+            case 2: // AdministradorFarmacia - Gestión de farmacia
+                header('Location:../vista/adm_catalogo.php');
+                break;
+            case 3: // Farmaceutico - Gestión de productos y ventas
                 header('Location:../vista/tec_catalogo.php');
                 break;
-            case 3:
+            case 4: // Supervisor - Supervisión y reportes
                 header('Location:../vista/adm_catalogo.php');
                 break;
+            case 5: // Cajero - Solo ventas
+                header('Location:../vista/tec_catalogo.php');
+                break;
+            default:
+                // Si el tipo no es reconocido, regresamos al login
+                header('Location: ../index.php');
+                break;
         }
-    }else{//si no existe el usuario regresamos al login
+    } else {
+        /**
+         * No se encontró el usuario o las credenciales son incorrectas
+         * Regresamos al formulario de login
+         */
         header('Location: ../index.php');
     }
 }

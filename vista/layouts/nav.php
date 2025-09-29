@@ -61,7 +61,7 @@
                 <!--Serrar Sesion-->
               <div class="dropdown-divider"></div>
               <a href="../controlador/Logout.php" class="dropdown-item has-icon text-danger">
-                <i class="fas fa-sign-out-alt"></i> Cerrar Cesion
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesion
               </a>
             </div>
           </li>
@@ -80,12 +80,12 @@
             <a href="index.html">Dr</a>
           </div>
           <ul class="sidebar-menu">
-            <li class="menu-header "><i class="far fa-user"></i> Usuario</li>
-            <li class="dropdown">
-              <a  href="editar_datos_personales.php" class="nav-link"><span>Datos Personales</span></a>
+            <li class="menu-header ">Usuario</li>
+            <li >
+              <a  href="editar_datos_personales.php" class="nav-link"><i class="nav-icon fas fa-user-cog"></i> <span>Datos Personales</span></a>
             </li>
-            <li class="dropdown">
-              <a href="adm_usuario.php" class="nav-link"><span>Gestion De Usuario</span></a>
+            <li >
+              <a href="adm_usuario.php" class="nav-link"><i class="nav-icon fas fa-users"></i> <span>Gestion De Usuario</span></a>
             </li>
 
             <li class="menu-header">Almacenamiento</li>

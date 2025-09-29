@@ -17,7 +17,7 @@ if($_SESSION['us_tipo']==1 ||$_SESSION['us_tipo']==3){ // Verifica que el usuari
                         <i class="fas fa-image mr-2"></i>Cambiar Logo
                     </h5>
                     <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" class="h4 mb-0">&times;</span> <!-- Hace el botón de cerrar más grande -->
+                        <span aria-hidden="true">&times;</span> <!-- Hace el botón de cerrar más grande -->
                     </button>
                 </div>
                 <div class="modal-body p-4"> <!-- Aumenta el padding del cuerpo -->
@@ -71,7 +71,7 @@ if($_SESSION['us_tipo']==1 ||$_SESSION['us_tipo']==3){ // Verifica que el usuari
                     <i class="fas fa-flask mr-2"></i>Crear Laboratorio
                   </h3>
                   <button data-dismiss="modal" aria-label="close" class="close text-white">
-                    <span aria-hidden="true" class="h4 mb-0">&times;</span>
+                    <!--<span aria-hidden="true">&times;</span>-->
                   </button>
                 </div>
                 <div class="card-body p-4"> <!-- Aumenta el padding -->
@@ -124,7 +124,7 @@ if($_SESSION['us_tipo']==1 ||$_SESSION['us_tipo']==3){ // Verifica que el usuari
                     <i class="fas fa-tags mr-2"></i>Crear Tipo
                   </h3>
                   <button data-dismiss="modal" aria-label="close" class="close text-white">
-                    <span aria-hidden="true" class="h4 mb-0">&times;</span>
+                    <!--<span aria-hidden="true">&times;</span>-->
                   </button>
                 </div>
                 <div class="card-body p-4">
@@ -177,7 +177,7 @@ if($_SESSION['us_tipo']==1 ||$_SESSION['us_tipo']==3){ // Verifica que el usuari
                     <i class="fas fa-presentation mr-2"></i>Crear Presentación
                   </h3>
                   <button data-dismiss="modal" aria-label="close" class="close text-dark">
-                    <span aria-hidden="true" class="h4 mb-0">&times;</span>
+                    <!--<span aria-hidden="true">&times;</span>-->
                   </button>
                 </div>
                 <div class="card-body p-4">
